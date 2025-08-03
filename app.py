@@ -44,8 +44,15 @@ def get_video_details(video_url):
     except Exception as e:
         return {"error": str(e)}
 
+@app.route('/', methods=['GET'])
 @app.route('/api/download', methods=['GET'])
 def download_video():
+    video_url = request.args.get('url')
+    if not video_url:
+        return jsonify({"error": "URL parameter is missing"}), 400
+
+    video_details = get_video_details(video_url)
+    return jsonify(video_details)
     video_url = request.args.get('url')
     if not video_url:
         return jsonify({"error": "URL parameter is missing"}), 400
@@ -55,3 +62,4 @@ def download_video():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
+
