@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, request
+import os
 
 try:
     import yt_dlp
 except ImportError:
-    import os
     os.system("pip install yt-dlp")
     import yt_dlp
 
@@ -21,10 +21,10 @@ def get_video_details(video_url):
             info_dict = ydl.extract_info(video_url, download=False)
             formats = info_dict.get('formats', [])
 
-            # Get audio link (prefer m4a or best audio)
+            # Extract audio link (prefer m4a)
             audio_link = next((f['url'] for f in formats if f['ext'] == 'm4a'), None)
 
-            # Get video links by resolution
+            # Extract video links by resolution
             video_links = {
                 f['format_note']: f['url']
                 for f in formats
@@ -44,7 +44,7 @@ def get_video_details(video_url):
     except Exception as e:
         return {"error": str(e)}
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 @app.route('/api/download', methods=['GET'])
 def download_video():
     video_url = request.args.get('url')
@@ -53,13 +53,7 @@ def download_video():
 
     video_details = get_video_details(video_url)
     return jsonify(video_details)
-    video_url = request.args.get('url')
-    if not video_url:
-        return jsonify({"error": "URL parameter is missing"}), 400
-
-    video_details = get_video_details(video_url)
-    return jsonify(video_details)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
-
+    port = int(os.environ.get("PORT", 10000))  # Render uses this PORT env variable
+    app.run(host='0.0.0.0', port=port)
